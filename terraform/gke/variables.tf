@@ -9,7 +9,7 @@ variable "cluster_name" {
 
 variable "env_name" {
   description = "The environment for the GKE cluster"
-  default     = "5-n2-standard-32-100G-ssd"
+  default     = "default-values"
 }
 
 variable "region" {
@@ -19,7 +19,7 @@ variable "region" {
 
 variable "zones" {
     description = "The Availability Zones to deploy the cluster across. Must be within the region"
-    default = ["europe-west1-a", "europe-west1-b", "europe-west1-c"]
+    default = ["europe-west1-b", "europe-west1-c", "europe-west1-d"]
 }
 
 variable "network" {
