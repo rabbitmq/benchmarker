@@ -59,4 +59,9 @@ echo "RabbitMQ cluster deployed"
 pushd terraform/gke
     echo "Destroying GKE cluster"
     terraform destroy
+    echo "GKE cluster destroyed"
 popd
+
+# echo "Revoking gcloud credentials"
+# gcloud auth application-default revoke
+# echo "gcloud authentication revoked"
