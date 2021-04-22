@@ -59,5 +59,5 @@ variable "disk_size_gb" {
 
 variable "disk_type" {
     description = "Disk type"
-    default = "pd_ssd"
+    default = "pd-ssd"
 }
