@@ -10,7 +10,7 @@ set -euo pipefail
 pushd terraform/gke
     echo "Terraforming a GKE cluster"
     terraform init
-    terraform apply
+    terraform apply -var-file="../../cluster-config.tf"
     export KUBECONFIG="$PWD/kubeconfig-rabbitmq-benchmark"
     echo "Cluster created, credentials are located in 'terraform/gke/kubeconfig-rabbitmq-benchmark'"
 popd

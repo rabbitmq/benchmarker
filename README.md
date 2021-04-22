@@ -6,7 +6,7 @@ The tooling currently supports GKE using the [Terraform Kubernetes Engine Module
 
 ## Getting started
 To configure the Kubernetes cluster and hardware to deploy RabbitMQ, edit the terraform configuration in
-`terraform/gke/variables.tf`.
+`cluster-config.tfvars`.
 
 To configure RabbitMQ properties, edit the deployment YAML in `rabbitmq.yml`.
 

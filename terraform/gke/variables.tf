@@ -7,11 +7,6 @@ variable "cluster_name" {
   default     = "rabbitmq-benchmark"
 }
 
-variable "env_name" {
-  description = "The environment for the GKE cluster"
-  default     = "default-values"
-}
-
 variable "region" {
   description = "The region to host the cluster in"
   default     = "europe-west1"
