@@ -19,4 +19,8 @@ password: <PASSWORD>
 ```
 Additionally, the influxDB URL must be configured in `config.json`.
 
-To run the benchmark, run the script `benchmark --provider (gke|aks|eks)`. This script will deploy a Kubernetes clsuter on the selected provider, deploy the cluster operator and a RabbitMQ cluster on that Kubernetes cluster, run the benchmark, ~exporting the results to the databases~, and finally tear down the infrastructure.
+To run the benchmark, run the script
+```shell
+benchmark --provider (gke|aks|eks)
+```
+This script will deploy a Kubernetes clsuter on the selected provider, deploy the cluster operator and a RabbitMQ cluster on that Kubernetes cluster, run the benchmark, ~exporting the results to the databases~, and finally tear down the infrastructure.
