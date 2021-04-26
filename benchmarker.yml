@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rabbit-benchmarker
+  labels:
+    app: rabbit-test-tool
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rabbit-test-tool
+  template:
+    metadata:
+      labels:
+        app: rabbit-test-tool
+    spec:
+      containers:
+      - name: rabbit-test-tool
+        image: pivotalrabbitmq/rabbittesttool:1.1
+        envFrom:
+        - secretRef:
+            name: benchmark-default-user
+        - secretRef:
+            name: benchmark-influx-user
+        volumeMounts:
+        - name: topology-file
+          mountPath: /etc/config/topology.json
+          subPath: topology.json
+          readOnly: true
+        - name: policy-file
+          mountPath: /etc/config/policy.json
+          subPath: policy.json
+          readOnly: true
+        - name: config-file
+          mountPath: /etc/config/config.json
+          subPath: config.json
+          readOnly: true
+        command: ["java"]
+        args:
+        - "-jar rabbittesttool-1.1-SNAPSHOT-jar-with-dependencies.jar"
+        - "--broker-user $NAME"
+        - "--broker-password $PASSWORD"
+        - "--metrics-influx-user $INFLUX_USER"
+        - "--metrics-influx-password $INFLUX_PASSWORD"
+        - "--topology /etc/config/topology.json"
+        - "--policies /etc/config/policy.json"
+        - "--config-file /etc/config/config.json"
+    volumes:
+    - name: topology-file
+      configMap:
+        name: topology-config
+    - name: policy-file
+      configMap:
+        name: policy-config
+    - name: config-file
+        configMap:
+          name: test-config
