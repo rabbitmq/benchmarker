@@ -7,7 +7,7 @@ usage() {
         cat <<-END
 USAGE:
   Provision infrastructure and run benchmark on Kubernetes
-    % benchmark --provider (gke,aks,eks)
+    % benchmark --provider (gke|aks|eks)
 END
     )
     echo "$usage"
