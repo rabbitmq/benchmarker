@@ -2,10 +2,9 @@
     "mode": "benchmark",
     "technology": "rabbitmq",
     "version": "3.8.15",
-    "metrics-influx-uri": "http://localhost:8086",
+    "metrics-influx-uri": "http://INFLUX_URI:8086",
     "metrics-influx-database": "amqp",
     "metrics-influx-interval": "10",
-    "broker-hosts": "localhost",
     "broker-mgmt-port": "15672",
     "broker-port": "5672",
     "broker-vhost": "benchmark"

@@ -17,11 +17,27 @@ spec:
       containers:
       - name: rabbit-test-tool
         image: pivotalrabbitmq/rabbittesttool:1.1
-        envFrom:
-        - secretRef:
-            name: benchmark-default-user
-        - secretRef:
-            name: benchmark-influx-user
+        env:
+          - name: RMQ_USER
+            valueFrom:
+              secretKeyRef:
+                name: benchmark-default-user
+                key: name
+          - name: RMQ_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: benchmark-default-user
+                key: password
+          - name: INFLUX_USER
+            valueFrom:
+              secretKeyRef:
+                name: influx-user
+                key: name
+          - name: INFLUX_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: influx-user
+                key: password
         volumeMounts:
         - name: topology-file
           mountPath: /etc/config/topology.json
@@ -38,8 +54,9 @@ spec:
         command: ["java"]
         args:
         - "-jar rabbittesttool-1.1-SNAPSHOT-jar-with-dependencies.jar"
-        - "--broker-user $NAME"
-        - "--broker-password $PASSWORD"
+        - "--broker-hosts $BENCHMARK_SERVICE_HOST"
+        - "--broker-user $RMQ_USER"
+        - "--broker-password $RMQ_PASSWORD"
         - "--metrics-influx-user $INFLUX_USER"
         - "--metrics-influx-password $INFLUX_PASSWORD"
         - "--topology /etc/config/topology.json"
