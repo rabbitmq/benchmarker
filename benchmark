@@ -1,0 +1,176 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+usage() {
+    usage=$(
+        cat <<-END
+USAGE:
+  Provision infrastructure and run benchmark on Kubernetes
+    % benchmark --provider (gke,aks,eks)
+END
+    )
+    echo "$usage"
+}
+
+terraform() {
+    case "$1" in
+    "gke")
+        terraform_gke
+        ;;
+    "aks")
+        terraform_aks
+        ;;
+    "eks")
+        terraform_eks
+        ;;
+    *)
+        echo "Option '$1' not recognized"
+        exit 1
+        ;;
+    esac
+}
+
+terraform_gke() {
+    # echo "Deployment requires gcloud credentials"
+    # gcloud auth application-default login
+    # echo "gcloud authenticated"
+
+    pushd terraform/gke
+        echo "Terraforming a GKE cluster."
+        terraform init
+        terraform apply -var-file="../../gke-cluster-config.tf"
+        export KUBECONFIG="$PWD/kubeconfig-rabbitmq-benchmark"
+        echo "Cluster created, credentials are located in 'terraform/gke/kubeconfig-rabbitmq-benchmark'."
+    popd
+}
+
+terraform_aks() {
+    pushd terraform/aks
+        echo "Terraforming an AKS cluster."
+        terraform init
+        terraform apply -var-file="../../aks-cluster-config.tf"
+        export KUBECONFIG="$PWD/kubeconfig-rabbitmq-benchmark"
+        echo "Cluster created, credentials are located in 'terraform/aks/kubeconfig-rabbitmq-benchmark'."
+    popd
+}
+
+terraform_eks() {
+    exit 0
+}
+
+deploy() {
+    deploy_cluster_operator
+    deploy_telegraf_operator
+    deploy_production_cluster
+}
+
+deploy_cluster_operator() {
+    echo "Deploying latest RabbitMQ cluster operator."
+    kubectl apply -f "https://github.com/rabbitmq/cluster-operator/releases/latest/download/cluster-operator.yml"
+    echo "Cluster operator deployed."
+}
+
+deploy_telegraf_operator() {
+    echo "Deploying telegraf operator for exporting metrics."
+    kubectl apply -f "https://raw.githubusercontent.com/influxdata/telegraf-operator/master/deploy/dev.yml"
+    kubectl apply -f telegraf.yml
+    echo "Telegraf operator deployed"
+}
+
+deploy_production_cluster() {
+    echo "Deploying RabbitMQ cluster."
+    kubectl apply -f rabbitmq.yml
+    echo -n "Waiting for RabbitMQ cluster to be ready."
+    while [ "$(kubectl get rmq benchmark -o jsonpath='{.status.conditions[?(@.type=="AllReplicasReady")].status}')" != "True" ]; do
+        echo -n "."
+        sleep 5
+    done
+    echo " RabbitMQ cluster deployed."
+}
+
+# Now to actually run the benchmark
+# The idea is to use RabbitTestTool, which requires some policy and topology files
+# Additionally, we should collect the test results in an InfluxDB specified by the user
+benchmark() {
+    echo "Running Rabbit Test Tool. Test results exported to InfluxDB."
+    kubectl create configmap test-config --from-file=config.json
+    kubectl create configmap policy-config --from-file=policy.json
+    kubectl create configmap topology-config --from-file=topology.json
+    kubectl apply -f benchmarker.yml
+
+    # figure out how to detect when benchmark is finished
+    # echo "Benchmark completed"
+}
+
+destroy() {
+    case "$1" in
+    "gke")
+        destroy_gke
+        ;;
+    "aks")
+        destroy_aks
+        ;;
+    "eks")
+        destroy_eks
+        ;;
+    *)
+        echo "Option '$1' not recognized"
+        exit 1
+        ;;
+    esac
+}
+
+destroy_gke() {
+    pushd terraform/gke
+        echo "Destroying GKE cluster."
+        terraform destroy
+        echo "GKE cluster destroyed."
+    popd
+}
+
+destroy_aks() {
+    pushd terraform/aks
+        echo "Destroying AKS cluster."
+        terraform destroy
+        echo "AKS cluster destroyed."
+    popd
+}
+
+destroy_eks() {
+    exit 0
+}
+
+main() {
+    if [[ "$1" == "--help" ]]; then
+        usage
+        exit 0
+    fi
+
+    case "$1" in
+    "--provider")
+        shift 1
+        if [[ "$#" -eq 0 ]]; then
+            usage
+            exit 1
+        fi
+        terraform "$@"
+        deploy
+        benchmark
+        destroy "$@"
+        ;;
+    "help")
+        usage
+        ;;
+    *)
+        usage
+        exit 1
+        ;;
+    esac
+}
+
+if [[ "$#" -ge 1 ]]; then
+    main "$@"
+else
+    usage
+fi
