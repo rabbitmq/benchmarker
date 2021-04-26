@@ -35,6 +35,9 @@ echo " RabbitMQ cluster deployed."
 # Additionally, we should collect the test results in an InfluxDB specified by the user
 
 echo "Running Rabbit Test Tool. Test results exported to InfluxDB."
+kubectl create configmap test-config --from-file=config.json
+kubectl create configmap policy-config --from-file=policy.json
+kubectl create configmap topology-config --from-file=topology.json
 kubectl apply -f benchmarker.yml
 
 # figure out how to detect when benchmark is finished

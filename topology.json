@@ -1,0 +1,49 @@
+{
+    "topologyType": "fixed",
+    "benchmarkType": "throughput",
+    "topologyGroups": [
+        {
+            "name": "benchmark",
+            "scale": 1,
+            "queues": [{
+                "prefix": "qq",
+                "scale": 100,
+                "properties": [{ "key": "x-queue-type", "value": "quorum", "type": "string" }]
+            }],
+            "publishers": [{
+                    "prefix": "p",
+                    "scale": 100,
+                    "publishMode":{
+                        "useConfirms": true,
+                        "inFlightLimit": 100
+                    },
+                    "sendToQueuePrefix": {
+                        "queuePrefix": "qq",
+                        "mode": "Counterpart"
+                    },
+                    "deliveryMode": "Persistent",
+                    "messageSize": 65535,
+                    "msgsPerSecondPerPublisher": 100
+            }],
+            "consumers": [
+                {
+                    "prefix": "c",
+                    "scale": 100,
+                    "queuePrefix": "qq",
+                    "ackMode": {
+                        "manualAcks": true,
+                        "consumerPrefetch": 10,
+                        "ackInterval": 5
+                    },
+                    "processingMs": 10
+                }
+            ]
+        }
+    ],
+    "dimensions" : {
+        "fixedDimensions": {
+            "durationSeconds": 300,
+            "rampUpSeconds": 10
+        }
+    }
+}
