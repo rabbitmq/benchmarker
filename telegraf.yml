@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: telegraf-operator-classes
+  namespace: telegraf-operator
+stringData:
+  influxdb_v2: |+
+    [[outputs.influxdb_v2]]
+      urls = ["http://INFLUX_URL"]
+      token = "TOKEN"
+      organization = "ORG_NAME"
+      bucket = "rabbitmq"
+      timeout = "5s"
+      metric_batch_size = 10000
+      metric_buffer_limit = 100000
+    [global_tags]
+      env = "rabbitmq-benchmark"
+      hostname = "$HOSTNAME"
+      nodename = "$NODENAME"

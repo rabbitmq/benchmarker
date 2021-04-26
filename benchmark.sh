@@ -20,6 +20,12 @@ echo "Deploying latest RabbitMQ cluster operator."
 kubectl apply -f "https://github.com/rabbitmq/cluster-operator/releases/latest/download/cluster-operator.yml"
 echo "Cluster operator deployed."
 
+# Deploy telegraf operator
+echo "Deploying telegraf operator for exporting metrics."
+kubectl apply -f "https://raw.githubusercontent.com/influxdata/telegraf-operator/master/deploy/dev.yml"
+kubectl apply -f telegraf.yml
+echo "Telegraf operator deployed"
+
 # Deploy a production ready cluster
 echo "Deploying RabbitMQ cluster."
 kubectl apply -f rabbitmq.yml

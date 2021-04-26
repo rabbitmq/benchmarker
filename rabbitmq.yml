@@ -12,6 +12,12 @@ apiVersion: rabbitmq.com/v1beta1
 kind: RabbitmqCluster
 metadata:
   name: benchmark
+  annotations:
+    telegraf.influxdata.com/port: "15692"
+    telegraf.influxdata.com/path: /metrics
+    telegraf.influxdata.com/interval: 10s
+    telegraf.influxdata.com/scheme: http
+    telegraf.influxdata.com/internal: "true"
 spec:
   replicas: 3
   resources:
