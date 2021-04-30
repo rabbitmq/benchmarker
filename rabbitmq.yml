@@ -20,6 +20,20 @@ metadata:
     telegraf.influxdata.com/internal: "true"
 spec:
   replicas: 3
+  tolerations:
+    - key: "rabbit-pool"
+      operator: "Equal"
+      value: true
+      effect: "NoSchedule"
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSlectorTerms:
+        - matchExpressions:
+          - key: rabbit-pool
+            operator: In
+            values:
+            - true
   resources:
     requests:
       cpu: 16

@@ -52,13 +52,37 @@ module "gke" {
   ip_range_services      = var.ip_range_services_name
   node_pools = [
     {
-      name                      = "node-pool"
+      name                      = "rabbit-pool"
       machine_type              = var.machine_type
       node_locations            = join(",", var.zones)
       initial_node_count        = var.nodes
       disk_size_gb              = var.disk_size_gb
       disk_type                 = var.disk_type
       autoscaling               = false
+      preemptible               = false
     },
+    {
+      name                      = "data-pool",
+      machine_type              = "n2-standard-4",
+      node_locations            = join(",", var.zones)
+      initial_node_count        = 3
+      disk_size_gb              = 50
+      disk_type                 = "pd-standard"
+      autoscaling               = false
+      preemptible               = false
+    }
   ]
+  node_pools_labels = {
+    rabbit-pool = { rabbit-pool = true }
+    data-pool = { data-pool = true }
+  }
+  node_pools_taints = {
+    rabbit-pool = [
+      {
+        key = "rabbit-pool"
+        value = true
+        effect = "NO_SCHEDULE"
+      }
+    ]
+  }
 }
