@@ -31,12 +31,12 @@ spec:
           - name: INFLUX_USER
             valueFrom:
               secretKeyRef:
-                name: influx-user
+                name: benchmark-data-influxdb-auth
                 key: name
           - name: INFLUX_PASSWORD
             valueFrom:
               secretKeyRef:
-                name: influx-user
+                name: benchmark-data-influxdb-auth
                 key: password
         volumeMounts:
         - name: topology-file

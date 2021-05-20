@@ -8,26 +8,31 @@ usage() {
 USAGE:
   Provision infrastructure and run benchmark on Kubernetes
     % benchmark --provider (gke|aks|eks)
+  Destroy infrastructure
+    % benchmark destroy --provider (gke|aks|eks)
 END
     )
     echo "$usage"
 }
 
-terraform() {
-    case "$1" in
-    "gke")
-        terraform_gke
-        ;;
-    "aks")
-        terraform_aks
-        ;;
-    "eks")
-        terraform_eks
-        ;;
-    *)
-        echo "Option '$1' not recognized"
-        exit 1
-        ;;
+terraform_env() {
+    case "$provider" in
+        "gke")
+            terraform_gke
+            ;;
+
+        "aks")
+            terraform_aks
+            ;;
+
+        "eks")
+            terraform_eks
+            ;;
+
+        *)
+            echo "Option '$provider' not recognized"
+            exit 1
+            ;;
     esac
 }
 
@@ -39,7 +44,7 @@ terraform_gke() {
     pushd terraform/gke
         echo "Terraforming a GKE cluster."
         terraform init
-        terraform apply -var-file="../../gke-cluster-config.tf"
+        terraform apply -var-file="../../gke-cluster-config.tfvars"
         export KUBECONFIG="$PWD/kubeconfig-rabbitmq-benchmark"
         echo "Cluster created, credentials are located in 'terraform/gke/kubeconfig-rabbitmq-benchmark'."
     popd
@@ -49,7 +54,7 @@ terraform_aks() {
     pushd terraform/aks
         echo "Terraforming an AKS cluster."
         terraform init
-        terraform apply -var-file="../../aks-cluster-config.tf"
+        terraform apply -var-file="../../aks-cluster-config.tfvars"
         export KUBECONFIG="$PWD/kubeconfig-rabbitmq-benchmark"
         echo "Cluster created, credentials are located in 'terraform/aks/kubeconfig-rabbitmq-benchmark'."
     popd
@@ -63,6 +68,7 @@ deploy() {
     deploy_cluster_operator
     deploy_telegraf_operator
     deploy_influx_db
+    deploy_grafana
     deploy_production_cluster
 }
 
@@ -82,8 +88,15 @@ deploy_telegraf_operator() {
 deploy_influx_db() {
     echo "Deploying InfluxDB for storing metrics"
     helm repo add influxdata https://helm.influxdata.com/
-    helm upgrade --install influx-operator influxdata/influxdb2
+    helm upgrade --install benchmark-data -f influx-values.yml influxdata/influxdb
     echo "InfluxDB deployed"
+}
+
+deploy_grafana() {
+    echo "Deploying Grafana"
+    helm repo add grafana https://grafana.github.io/helm-charts
+    helm install grafana grafana/grafana
+    echo "Grafana deployed"
 }
 
 deploy_production_cluster() {
@@ -112,20 +125,26 @@ benchmark() {
 }
 
 destroy() {
-    case "$1" in
-    "gke")
-        destroy_gke
-        ;;
-    "aks")
-        destroy_aks
-        ;;
-    "eks")
-        destroy_eks
-        ;;
-    *)
-        echo "Option '$1' not recognized"
-        exit 1
-        ;;
+    case "$provider" in
+        "gke")
+            destroy_gke
+            return
+            ;;
+
+        "aks")
+            destroy_aks
+            return
+            ;;
+
+        "eks")
+            destroy_eks
+            return
+            ;;
+
+        *)
+            echo "Option '$provider' not recognized"
+            exit 1
+            ;;
     esac
 }
 
@@ -149,36 +168,40 @@ destroy_eks() {
     exit 0
 }
 
-main() {
-    if [[ "$1" == "--help" ]]; then
+case "$#" in
+    1)
+        if [[ "$1" == "--help" ]]; then
+            usage
+            exit 0
+        fi
         usage
-        exit 0
-    fi
+        exit 1
+        ;;
 
-    case "$1" in
-    "--provider")
-        shift 1
-        if [[ "$#" -eq 0 ]]; then
+    2)
+        if [[ "$1" != "--provider" ]]; then
             usage
             exit 1
         fi
-        terraform "$@"
+        provider="$2"
+        terraform_env
         deploy
         benchmark
-        # destroy "$@"
+        exit 0
         ;;
-    "help")
-        usage
+
+    3)
+        if [[ "$1" != "destroy" ]] || [[ "$2" != "--provider" ]]; then
+            usage
+            exit 1
+        fi
+        provider="$3"
+        destroy
+        exit 0
         ;;
+
     *)
         usage
         exit 1
         ;;
-    esac
-}
-
-if [[ "$#" -ge 1 ]]; then
-    main "$@"
-else
-    usage
-fi
+esac

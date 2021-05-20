@@ -17,7 +17,7 @@ metadata:
     telegraf.influxdata.com/path: /metrics
     telegraf.influxdata.com/interval: 10s
     telegraf.influxdata.com/scheme: http
-    telegraf.influxdata.com/internal: "true"
+    telegraf.influxdata.com/class: basic
 spec:
   replicas: 3
   tolerations:

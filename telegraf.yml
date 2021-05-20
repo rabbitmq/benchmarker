@@ -4,16 +4,12 @@ metadata:
   name: telegraf-operator-classes
   namespace: telegraf-operator
 stringData:
-  influxdb_v2: |+
-    [[outputs.influxdb_v2]]
-      urls = ["http://INFLUX_URL"]
-      token = "TOKEN"
-      organization = "ORG_NAME"
-      bucket = "rabbitmq"
-      timeout = "5s"
-      metric_batch_size = 10000
-      metric_buffer_limit = 100000
+  basic: |+
+    [[outputs.influxdb]]
+      urls = ["http://benchmark-data-influxdb:8086"]
+    [[outputs.file]]
+      files = ["stdout"]
     [global_tags]
-      env = "rabbitmq-benchmark"
+      type = "rabbitmq"
       hostname = "$HOSTNAME"
       nodename = "$NODENAME"
