@@ -81,27 +81,27 @@ deploy_cluster_operator() {
 deploy_telegraf_operator() {
     echo "Deploying telegraf operator for exporting metrics."
     kubectl apply -f "https://raw.githubusercontent.com/influxdata/telegraf-operator/master/deploy/dev.yml"
-    kubectl apply -f telegraf.yml
+    kubectl apply -f test-infrastructure/telegraf.yml
     echo "Telegraf operator deployed"
 }
 
 deploy_influx_db() {
     echo "Deploying InfluxDB for storing metrics"
     helm repo add influxdata https://helm.influxdata.com/
-    helm upgrade --install benchmark-data -f influx-values.yml influxdata/influxdb
+    helm upgrade --install benchmark-data -f test-infrastructure/influx-values.yml influxdata/influxdb
     echo "InfluxDB deployed"
 }
 
 deploy_grafana() {
     echo "Deploying Grafana"
     helm repo add grafana https://grafana.github.io/helm-charts
-    helm upgrade --install grafana -f grafana-values.yml grafana/grafana
+    helm upgrade --install grafana -f test-infrastructure/grafana-values.yml grafana/grafana
     echo "Grafana deployed"
 }
 
 deploy_production_cluster() {
     echo "Deploying RabbitMQ cluster."
-    kubectl apply -f rabbitmq.yml
+    ytt -f test-infrastructure/rabbitmq.yml | kubectl apply -f-
     echo -n "Waiting for RabbitMQ cluster to be ready."
     while [ "$(kubectl get rmq benchmark -o jsonpath='{.status.conditions[?(@.type=="AllReplicasReady")].status}')" != "True" ]; do
         echo -n "."
@@ -115,7 +115,7 @@ deploy_production_cluster() {
 # Additionally, we should collect the test results in an InfluxDB specified by the user
 benchmark() {
     echo "Running Rabbit Test Tool. Test results exported to InfluxDB."
-    ytt -f benchmarker.yml -f config.json -f policy.json -f topology.json | kubectl apply -f-
+    ytt -f test-infrastructure/benchmarker.yml -f config.json -f policy.json -f topology.json | kubectl apply -f-
 
     # figure out how to detect when benchmark is finished
     # echo "Benchmark completed"
