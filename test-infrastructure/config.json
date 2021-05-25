@@ -1,7 +1,7 @@
 {
     "mode": "benchmark",
     "technology": "rabbitmq",
-    "version": "3.8.15",
+    "version": "3.8.16",
     "metrics-influx-uri": "http://INFLUX_URI:8086",
     "metrics-influx-database": "amqp",
     "metrics-influx-interval": "10",

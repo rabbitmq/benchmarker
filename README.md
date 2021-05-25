@@ -8,19 +8,18 @@ The tooling currently supports GKE using the [Terraform Kubernetes Engine Module
 To configure the Kubernetes cluster and hardware to deploy RabbitMQ, edit the terraform configuration in
 `PROVIDER-cluster-config.tfvars`, where `PROVIDER` is one of `gke`, `aks`, or `eks`.
 
-To configure RabbitMQ properties, edit the deployment YAML in `rabbitmq.yml`.
+To configure RabbitMQ properties, edit the values YAML in `RabbitMQ-values.yml`.
 To configure the benchmark topology, edit `topology.json`.
 To configure the benchmark RabbitMQ policies, edit `policy.json`.
-
-Benchmarking requires an InfluxDB for collecting metrics. Credentials for this database must be stored in a Kubernetes secret named `influx-user` in the following format:
-```YAML
-name: <USERNAME>
-password: <PASSWORD>
-```
-Additionally, the influxDB URL must be configured in `config.json`.
 
 To run the benchmark, run the script
 ```shell
 benchmark --provider (gke|aks|eks)
 ```
-This script will deploy a Kubernetes clsuter on the selected provider, deploy the cluster operator and a RabbitMQ cluster on that Kubernetes cluster, run the benchmark, ~exporting the results to the databases~, and finally tear down the infrastructure.
+This script will deploy a Kubernetes clsuter on the selected provider, deploy the cluster operator and a RabbitMQ cluster on that Kubernetes cluster, and run the benchmark, exporting the results to the databases.
+
+To tear down the infrastructure provisioned by the operator, run
+```shell
+benchmark destroy --provider (gke|aks|eks)
+```
+Note this operation is destructive and will result in the loss of the benchmark data.

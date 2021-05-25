@@ -115,7 +115,7 @@ deploy_production_cluster() {
 # Additionally, we should collect the test results in an InfluxDB specified by the user
 benchmark() {
     echo "Running Rabbit Test Tool. Test results exported to InfluxDB."
-    ytt -f test-infrastructure/benchmarker.yml -f config.json -f policy.json -f topology.json | kubectl apply -f-
+    ytt -f test-infrastructure/benchmarker.yml -f test-infrastructure/config.json -f policy.json -f topology.json | kubectl apply -f-
 
     # figure out how to detect when benchmark is finished
     # echo "Benchmark completed"
