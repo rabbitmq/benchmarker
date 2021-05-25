@@ -1,0 +1,7 @@
+#@data/values
+---
+replicas: 3
+maxCPU: 32
+maxMemory: 100Gi
+storageClassName: premium-rwo
+storageSize: 100Gi

@@ -1,3 +1,5 @@
+#@ load("@ytt:data", "data")
+---
 apiVersion: policy/v1beta1
 kind: PodDisruptionBudget
 metadata:
@@ -35,12 +37,9 @@ spec:
             values:
             - true
   resources:
-    requests:
-      cpu: 16
-      memory: 64Gi
     limits:
-      cpu: 32
-      memory: 100Gi
+      cpu: #@ data.values.maxCPU
+      memory: #@ data.values.maxMemory
   rabbitmq:
     additionalConfig: |
       cluster_partition_handling = pause_minority
@@ -48,8 +47,8 @@ spec:
       disk_free_limit.relative = 1.0
       collect_statistics_interval = 10000
   persistence:
-    storageClassName: premium-rwo
-    storage: "50Gi"
+    storageClassName: #@ data.values.storageClassName
+    storage: #@ data.values.storageSize
   override:
     statefulSet:
       spec:

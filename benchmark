@@ -101,7 +101,7 @@ deploy_grafana() {
 
 deploy_production_cluster() {
     echo "Deploying RabbitMQ cluster."
-    ytt -f test-infrastructure/rabbitmq.yml | kubectl apply -f-
+    ytt -f test-infrastructure/rabbitmq.yml -f RabbitMQ-values.yml | kubectl apply -f-
     echo -n "Waiting for RabbitMQ cluster to be ready."
     while [ "$(kubectl get rmq benchmark -o jsonpath='{.status.conditions[?(@.type=="AllReplicasReady")].status}')" != "True" ]; do
         echo -n "."
