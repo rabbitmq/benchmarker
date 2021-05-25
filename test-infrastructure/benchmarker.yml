@@ -85,13 +85,13 @@ spec:
         - "--topology /etc/config/topology.json"
         - "--policies /etc/config/policy.json"
         - "--config-file /etc/config/config.json"
-    volumes:
-    - name: topology-file
-      configMap:
-        name: topology-config
-    - name: policy-file
-      configMap:
-        name: policy-config
-    - name: config-file
-      configMap:
-        name: benchmark-config
+      volumes:
+      - name: topology-file
+        configMap:
+          name: topology-config
+      - name: policy-file
+        configMap:
+          name: policy-config
+      - name: config-file
+        configMap:
+          name: benchmark-config

@@ -25,17 +25,17 @@ spec:
   tolerations:
     - key: "rabbit-pool"
       operator: "Equal"
-      value: true
+      value: "true"
       effect: "NoSchedule"
   affinity:
     nodeAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
-        nodeSlectorTerms:
+        nodeSelectorTerms:
         - matchExpressions:
           - key: rabbit-pool
             operator: In
             values:
-            - true
+            - "true"
   resources:
     limits:
       cpu: #@ data.values.maxCPU
