@@ -1,0 +1,6 @@
+---
+config:
+  http:
+    auth-enabled: true
+setDefaultUser:
+  enabled: true
