@@ -1,3 +1,26 @@
+#@ load("@ytt:data", "data")
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: topology-config
+data:
+  topology.json: #@ data.read("topology.json")
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: policy-config
+data:
+  policy.json: #@ data.read("policy.json")
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: benchmark-config
+data:
+  config.json: #@ data.read("config.json")
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -70,5 +93,5 @@ spec:
       configMap:
         name: policy-config
     - name: config-file
-        configMap:
-          name: test-config
+      configMap:
+        name: benchmark-config

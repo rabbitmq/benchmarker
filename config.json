@@ -8,4 +8,4 @@
     "broker-mgmt-port": "15672",
     "broker-port": "5672",
     "broker-vhost": "benchmark"
-  }
+}
