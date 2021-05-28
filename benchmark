@@ -62,7 +62,13 @@ terraform_aks() {
 }
 
 terraform_eks() {
-    exit 0
+    pushd terraform/eks
+        echo "Terraforming an EKS cluster."
+        terraform init
+        terraform apply -var-file="../../eks-cluster-config.tfvars"
+        export KUBECONFIG="$PWD/kubeconfig_benchmark"
+        echo "Cluster created, credentials are located in 'terraform/eks/kubeconfig-rabbitmq-benchmark'."
+    popd
 }
 
 deploy() {
@@ -163,7 +169,11 @@ destroy_aks() {
 }
 
 destroy_eks() {
-    exit 0
+    pushd terraform/eks
+        echo "Destroying EKS cluster."
+        terraform destroy
+        echo "EKS cluster destroyed."
+    popd
 }
 
 case "$#" in
