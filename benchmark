@@ -55,6 +55,7 @@ terraform_aks() {
         echo "Terraforming an AKS cluster."
         terraform init
         terraform apply -var-file="../../aks-cluster-config.tfvars"
+        terraform output kube_config > kubeconfig-rabbitmq-benchmark
         export KUBECONFIG="$PWD/kubeconfig-rabbitmq-benchmark"
         echo "Cluster created, credentials are located in 'terraform/aks/kubeconfig-rabbitmq-benchmark'."
     popd
