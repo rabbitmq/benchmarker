@@ -1,3 +1,27 @@
 ---
 persistence:
   enabled: true
+sidecar.datasources.enabled: true
+datasources:
+  datasources.yaml:
+    apiVersion: 1
+    datasources:
+    - name: benchmark-data
+      type: influxdb
+      access: direct
+      orgId: 1
+      url: http://benchmark-data-influxdb.default.svc.cluster.local:8080
+      version: 1
+      editable: false
+---
+env:
+- name: datasources.datasources.yaml.datasources[0].user
+  valueFrom:
+    secretKeyRef:
+      name: benchmark-data-influxdb-auth
+      key: influxdb-user
+- name: datasources.datasources.yaml.datasources[0].password
+  valueFrom:
+    secretKeyRef:
+      name: benchmark-data-influxdb-auth
+      key: influxdb-password
