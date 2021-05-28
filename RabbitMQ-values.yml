@@ -1,5 +1,7 @@
 #@data/values
 ---
+image: rabbitmq:latest
+imagePullSecrets: []
 replicas: 3
 maxCPU: 32
 maxMemory: 100Gi

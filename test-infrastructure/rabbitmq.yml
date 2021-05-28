@@ -21,6 +21,8 @@ metadata:
     telegraf.influxdata.com/scheme: http
     telegraf.influxdata.com/class: basic
 spec:
+  image: #@ data.values.image
+  imagePullSecrets: #@ data.values.imagePullSecrets
   replicas: 3
   tolerations:
     - key: "rabbit-pool"
