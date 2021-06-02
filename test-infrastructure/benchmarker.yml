@@ -21,21 +21,14 @@ metadata:
 data:
   config.json: #@ data.read("config.json")
 ---
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: batch/v1
+kind: Job
 metadata:
   name: rabbit-benchmarker
-  labels:
-    app: rabbit-test-tool
 spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: rabbit-test-tool
+  completions: 1
+  ttlSecondsAfterFinished: 600
   template:
-    metadata:
-      labels:
-        app: rabbit-test-tool
     spec:
       containers:
       - name: rabbit-test-tool
