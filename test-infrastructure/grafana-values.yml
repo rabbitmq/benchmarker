@@ -9,6 +9,7 @@ datasources:
     - name: benchmark-data
       type: influxdb
       access: direct
+      database: rabbitmq
       orgId: 1
       url: http://benchmark-data-influxdb.default.svc.cluster.local:8080
       version: 1

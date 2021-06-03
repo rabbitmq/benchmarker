@@ -3,7 +3,7 @@
     "technology": "rabbitmq",
     "version": "3.8.16",
     "metrics-influx-uri": "http://benchmark-data-influxdb.default.svc.cluster.local:8086",
-    "metrics-influx-database": "amqp",
+    "metrics-influx-database": "rabbitmq",
     "metrics-influx-interval": "10",
     "broker-hosts": "benchmark.default.svc.cluster.local:5672",
     "broker-mgmt-port": "15672",
