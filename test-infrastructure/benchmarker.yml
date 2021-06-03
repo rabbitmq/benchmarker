@@ -35,26 +35,26 @@ spec:
       - name: rabbit-test-tool
         image: pivotalrabbitmq/rabbittesttool:latest
         env:
-          - name: RMQ_USER
-            valueFrom:
-              secretKeyRef:
-                name: benchmark-default-user
-                key: username
-          - name: RMQ_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: benchmark-default-user
-                key: password
-          - name: INFLUX_USER
-            valueFrom:
-              secretKeyRef:
-                name: benchmark-data-influxdb-auth
-                key: influxdb-user
-          - name: INFLUX_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: benchmark-data-influxdb-auth
-                key: influxdb-password
+        - name: RMQ_USER
+          valueFrom:
+            secretKeyRef:
+              name: benchmark-default-user
+              key: username
+        - name: RMQ_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: benchmark-default-user
+              key: password
+        - name: INFLUX_USER
+          valueFrom:
+            secretKeyRef:
+              name: benchmark-data-influxdb-auth
+              key: influxdb-user
+        - name: INFLUX_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: benchmark-data-influxdb-auth
+              key: influxdb-password
         volumeMounts:
         - name: topology-file
           mountPath: /etc/config/topology.json
@@ -69,10 +69,10 @@ spec:
           subPath: config.json
           readOnly: true
         args:
-        - "--broker-user $RMQ_USER"
-        - "--broker-password $RMQ_PASSWORD"
-        - "--metrics-influx-user $INFLUX_USER"
-        - "--metrics-influx-password $INFLUX_PASSWORD"
+        - "--broker-user $(RMQ_USER)"
+        - "--broker-password $(RMQ_PASSWORD)"
+        - "--metrics-influx-user $(INFLUX_USER)"
+        - "--metrics-influx-password $(INFLUX_PASSWORD)"
         - "--topology /etc/config/topology.json"
         - "--policies /etc/config/policy.json"
         - "--config-file /etc/config/config.json"
