@@ -87,8 +87,8 @@ deploy_cluster_operator() {
 
 deploy_telegraf_operator() {
     echo "Deploying telegraf operator for exporting metrics."
-    kubectl apply -f "https://raw.githubusercontent.com/influxdata/telegraf-operator/master/deploy/dev.yml"
-    kubectl apply -f test-infrastructure/telegraf.yml
+    helm repo add influxdata https://helm.influxdata.com/
+    helm upgrade --install telegraf-operator -f test-infrastructure/influx-values.yml influxdata/telegraf-operator
     echo "Telegraf operator deployed"
 }
 

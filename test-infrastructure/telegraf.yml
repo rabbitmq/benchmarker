@@ -3,13 +3,16 @@ kind: Secret
 metadata:
   name: telegraf-operator-classes
   namespace: telegraf-operator
-stringData:
-  basic: |+
-    [[outputs.influxdb]]
-      urls = ["http://benchmark-data-influxdb:8086"]
-    [[outputs.file]]
-      files = ["stdout"]
-    [global_tags]
-      type = "rabbitmq"
-      hostname = "$HOSTNAME"
-      nodename = "$NODENAME"
+classes:
+  default: "infra"
+  data:
+    infra: |+
+      [[outputs.influxdb]]
+        urls = ["http://benchmark-data-influxdb.default.svc.cluster.local:8086"]
+      [[outputs.file]]
+        files = ["stdout"]
+      [global_tags]
+        type = "infra"
+        env = "benchmark"
+        hostname = "$HOSTNAME"
+        nodename = "$NODENAME"
