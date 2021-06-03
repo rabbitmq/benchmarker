@@ -30,6 +30,7 @@ spec:
   ttlSecondsAfterFinished: 600
   template:
     spec:
+      restartPolicy: Never
       containers:
       - name: rabbit-test-tool
         image: pivotalrabbitmq/rabbittesttool:latest
@@ -38,7 +39,7 @@ spec:
             valueFrom:
               secretKeyRef:
                 name: benchmark-default-user
-                key: name
+                key: username
           - name: RMQ_PASSWORD
             valueFrom:
               secretKeyRef:
@@ -48,12 +49,12 @@ spec:
             valueFrom:
               secretKeyRef:
                 name: benchmark-data-influxdb-auth
-                key: name
+                key: influxdb-user
           - name: INFLUX_PASSWORD
             valueFrom:
               secretKeyRef:
                 name: benchmark-data-influxdb-auth
-                key: password
+                key: influxdb-password
         volumeMounts:
         - name: topology-file
           mountPath: /etc/config/topology.json
@@ -67,9 +68,7 @@ spec:
           mountPath: /etc/config/config.json
           subPath: config.json
           readOnly: true
-        command: ["java"]
         args:
-        - "-jar rabbittesttool-1.1-SNAPSHOT-jar-with-dependencies.jar"
         - "--broker-hosts $BENCHMARK_SERVICE_HOST"
         - "--broker-user $RMQ_USER"
         - "--broker-password $RMQ_PASSWORD"
