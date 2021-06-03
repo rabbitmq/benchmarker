@@ -69,7 +69,6 @@ spec:
           subPath: config.json
           readOnly: true
         args:
-        - "--broker-hosts $BENCHMARK_SERVICE_HOST"
         - "--broker-user $RMQ_USER"
         - "--broker-password $RMQ_PASSWORD"
         - "--metrics-influx-user $INFLUX_USER"
