@@ -23,7 +23,7 @@ metadata:
 spec:
   image: #@ data.values.image
   imagePullSecrets: #@ data.values.imagePullSecrets
-  replicas: #@ data.values.imagePullSecrets
+  replicas: #@ data.values.replicas
   tolerations:
     - key: "rabbit-pool"
       operator: "Equal"
