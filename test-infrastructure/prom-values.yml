@@ -1,0 +1,17 @@
+---
+defaultRules:
+  create: false
+nodeExporter:
+  enabled: false
+prometheus:
+  prometheusSpec:
+    ruleSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
+    probeSelectorNilUsesHelmValues: false
+alertmanager:
+  alertmanagerSpec:
+    useExistingSecret: true
+grafana:
+  adminPassword: admin
+  env:
+    GF_INSTALL_PLUGINS: flant-statusmap-panel

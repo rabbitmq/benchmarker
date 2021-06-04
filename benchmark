@@ -2,6 +2,11 @@
 
 set -euo pipefail
 
+GREEN='\033[0;32m'
+ORANGE='\033[0;33m'
+RED='\033[0;31m'
+NO_COLOR='\033[0m'
+
 usage() {
     usage=$(
         cat <<-END
@@ -30,7 +35,7 @@ terraform_env() {
             ;;
 
         *)
-            echo "Option '$provider' not recognized"
+            printf "%sOption '%s' not recognized%s\n" "$RED" "$provider" "$NO_COLOR"
             exit 1
             ;;
     esac
@@ -42,90 +47,93 @@ terraform_gke() {
     # echo "gcloud authenticated"
 
     pushd terraform/gke
-        echo "Terraforming a GKE cluster."
+        printf "%sTerraforming a GKE cluster.%s\n" "$GREEN" "$NO_COLOR"
         terraform init
         terraform apply -var-file="../../gke-cluster-config.tfvars"
         export KUBECONFIG="$PWD/kubeconfig-rabbitmq-benchmark"
-        echo "Cluster created, credentials are located in 'terraform/gke/kubeconfig-rabbitmq-benchmark'."
+        printf "%sCluster created, credentials are located in 'terraform/gke/kubeconfig-rabbitmq-benchmark'.%s\n" "$GREEN" "$NO_COLOR"
     popd
 }
 
 terraform_aks() {
     pushd terraform/aks
-        echo "Terraforming an AKS cluster."
+        printf "%sTerraforming an AKS cluster.%s\n" "$GREEN" "$NO_COLOR"
         terraform init
         terraform apply -var-file="../../aks-cluster-config.tfvars"
         terraform output kube_config > kubeconfig-rabbitmq-benchmark
         export KUBECONFIG="$PWD/kubeconfig-rabbitmq-benchmark"
-        echo "Cluster created, credentials are located in 'terraform/aks/kubeconfig-rabbitmq-benchmark'."
+        printf "%sCluster created, credentials are located in 'terraform/aks/kubeconfig-rabbitmq-benchmark'.%s\n" "$GREEN" "$NO_COLOR"
     popd
 }
 
 terraform_eks() {
     pushd terraform/eks
-        echo "Terraforming an EKS cluster."
+        printf "%sTerraforming an EKS cluster.%s\n" "$GREEN" "$NO_COLOR"
         terraform init
         terraform apply -var-file="../../eks-cluster-config.tfvars"
         export KUBECONFIG="$PWD/kubeconfig_benchmark"
-        echo "Cluster created, credentials are located in 'terraform/eks/kubeconfig-rabbitmq-benchmark'."
+        printf "%sCluster created, credentials are located in 'terraform/eks/kubeconfig-rabbitmq-benchmark'.%s\n" "$GREEN" "$NO_COLOR"
     popd
 }
 
 deploy() {
     deploy_cluster_operator
-    deploy_telegraf_operator
     deploy_influx_db
-    deploy_grafana
+    deploy_kube_prometheus_stack
     deploy_production_cluster
 }
 
 deploy_cluster_operator() {
-    echo "Deploying latest RabbitMQ cluster operator."
+    printf "%bDeploying latest RabbitMQ cluster operator.%b\n" "$GREEN" "$NO_COLOR"
     kubectl apply -f "https://github.com/rabbitmq/cluster-operator/releases/latest/download/cluster-operator.yml"
-    echo "Cluster operator deployed."
+    printf "%bCluster operator deployed.%b\n" "$GREEN" "$NO_COLOR"
 }
 
-deploy_telegraf_operator() {
-    echo "Deploying telegraf operator for exporting metrics."
-    helm repo add influxdata https://helm.influxdata.com/
-    helm upgrade --install telegraf-operator -f test-infrastructure/influx-values.yml influxdata/telegraf-operator
-    echo "Telegraf operator deployed"
+deploy_kube_prometheus_stack() {
+    printf "%bDeploying Kube Prometheus Stack.%b\n" "$GREEN" "$NO_COLOR"
+    helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+    helm upgrade --install prom -f test-infrastructure/prom-values.yml prometheus-community/kube-prometheus-stack
+    latest="$(mktemp -d)"
+    trap 'rm -rf "$latest"' EXIT
+    pushd "$latest"
+        wget -c "$(curl -s https://api.github.com/repos/rabbitmq/cluster-operator/releases/latest | jq -r '.tarball_url')" -O cluster-operator.tar.gz
+        tar xfz cluster-operator.tar.gz
+        source_dir="$(find "$latest" -type d -name 'rabbitmq-cluster-operator-*')"
+    popd
+    printf "%bDeploying ServiceMonitor and PodMonitor.%b\n" "$GREEN" "$NO_COLOR"
+    kubectl apply -f "$source_dir/observability/prometheus/monitors/"
+    printf "%bDeploying Prometheus Rules.%b\n" "$GREEN" "$NO_COLOR"
+    kubectl apply --recursive -f "$source_dir/observability/prometheus/rules/"
+    printf "%bDeploying Grafana Dashboards.%b\n" "$GREEN" "$NO_COLOR"
+    kubectl apply -f "$source_dir/observability/grafana/dashboards/"
+    printf "To open Grafana run\n%% kubectl port-forward svc/prom-grafana 3000:80\nand open your browser at http://localholst:3000\nusername: admin, password: admin\n%bKube Prometheus Stack deployed.%b\n" "$GREEN" "$NO_COLOR"
 }
 
 deploy_influx_db() {
-    echo "Deploying InfluxDB for storing metrics"
+    printf "%bDeploying InfluxDB for storing metrics.%b\n" "$GREEN" "$NO_COLOR"
     helm repo add influxdata https://helm.influxdata.com/
     helm upgrade --install benchmark-data -f test-infrastructure/influx-values.yml influxdata/influxdb
-    echo "InfluxDB deployed"
-}
-
-deploy_grafana() {
-    echo "Deploying Grafana"
-    helm repo add grafana https://grafana.github.io/helm-charts
-    helm upgrade --install grafana -f test-infrastructure/grafana-values.yml grafana/grafana
-    echo "Grafana deployed"
+    printf "%bInfluxDB deployed.%b\n" "$GREEN" "$NO_COLOR"
 }
 
 deploy_production_cluster() {
-    echo "Deploying RabbitMQ cluster."
+    printf "%bDeploying RabbitMQ cluster.%b\n" "$GREEN" "$NO_COLOR"
     ytt -f test-infrastructure/rabbitmq.yml -f RabbitMQ-values.yml | kubectl apply -f-
-    echo -n "Waiting for RabbitMQ cluster to be ready."
+    printf "Waiting for RabbitMQ cluster to be ready."
     while [ "$(kubectl get rmq benchmark -o jsonpath='{.status.conditions[?(@.type=="AllReplicasReady")].status}')" != "True" ]; do
-        echo -n "."
+        printf "."
         sleep 5
     done
-    echo " RabbitMQ cluster deployed."
+    printf "\n"
+    printf "%bRabbitMQ cluster deployed.%b\n" "$GREEN" "$NO_COLOR"
 }
 
 # Now to actually run the benchmark
 # The idea is to use RabbitTestTool, which requires some policy and topology files
-# Additionally, we should collect the test results in an InfluxDB specified by the user
+# Additionally, we should collect the test results in an InfluxDB
 benchmark() {
-    echo "Running Rabbit Test Tool. Test results exported to InfluxDB."
+    printf "%bRunning Rabbit Test Tool. Test results exported to InfluxDB.%b\n" "$GREEN" "$NO_COLOR"
     ytt -f test-infrastructure/benchmarker.yml -f test-infrastructure/config.json -f policy.json -f topology.json | kubectl apply -f-
-
-    # figure out how to detect when benchmark is finished
-    # echo "Benchmark completed"
 }
 
 destroy() {
@@ -146,7 +154,7 @@ destroy() {
             ;;
 
         *)
-            echo "Option '$provider' not recognized"
+            printf "%bOption '$provider' not recognized%b\n" "$RED" "$NO_COLOR"
             exit 1
             ;;
     esac
@@ -154,25 +162,25 @@ destroy() {
 
 destroy_gke() {
     pushd terraform/gke
-        echo "Destroying GKE cluster."
+        printf "%bDestroying GKE cluster.%b\n" "$ORANGE" "$NO_COLOR"
         terraform destroy
-        echo "GKE cluster destroyed."
+        printf "%bGKE cluster destroyed.%b\n" "$GREEN" "$NO_COLOR"
     popd
 }
 
 destroy_aks() {
     pushd terraform/aks
-        echo "Destroying AKS cluster."
+        printf "%bDestroying AKS cluster.%b\n" "$ORANGE" "$NO_COLOR"
         terraform destroy
-        echo "AKS cluster destroyed."
+        printf "%bAKS cluster destroyed.%b\n" "$GREEN" "$NO_COLOR"
     popd
 }
 
 destroy_eks() {
     pushd terraform/eks
-        echo "Destroying EKS cluster."
+        printf "%bDestroying EKS cluster.%b\n" "$ORANGE" "$NO_COLOR"
         terraform destroy
-        echo "EKS cluster destroyed."
+        printf "%bEKS cluster destroyed.%b\n" "$GREEN" "$NO_COLOR"
     popd
 }
 
