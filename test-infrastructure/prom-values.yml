@@ -8,6 +8,7 @@ prometheus:
     ruleSelectorNilUsesHelmValues: false
     podMonitorSelectorNilUsesHelmValues: false
     probeSelectorNilUsesHelmValues: false
+    serviceMonitorSelectorNilUsesHelmValues: false
 alertmanager:
   alertmanagerSpec:
     useExistingSecret: true
