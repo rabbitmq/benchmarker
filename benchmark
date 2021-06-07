@@ -91,28 +91,40 @@ deploy_cluster_operator() {
 
 deploy_kube_prometheus_stack() {
     printf "%bDeploying Kube Prometheus Stack.%b\n" "$GREEN" "$NO_COLOR"
+    promNS="prom"
     helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-    helm upgrade --install prom -f test-infrastructure/prom-values.yml prometheus-community/kube-prometheus-stack
-    latest="$(mktemp -d)"
-    trap 'rm -rf "$latest"' EXIT
-    pushd "$latest"
+    helm upgrade --install prom \
+        --namespace "$promNS" --create-namespace \
+        -f test-infrastructure/prom-values.yml \
+        prometheus-community/kube-prometheus-stack
+
+    operator="$(mktemp -d)"
+    trap 'rm -rf "$operator"' EXIT
+    pushd "$operator"
         wget -c "$(curl -s https://api.github.com/repos/rabbitmq/cluster-operator/releases/latest | jq -r '.tarball_url')" -O cluster-operator.tar.gz
         tar xfz cluster-operator.tar.gz
-        source_dir="$(find "$latest" -type d -name 'rabbitmq-cluster-operator-*')"
+        source_dir="$(find "$operator" -type d -name 'rabbitmq-cluster-operator-*')"
     popd
+
     printf "%bDeploying ServiceMonitor and PodMonitor.%b\n" "$GREEN" "$NO_COLOR"
-    kubectl apply -f "$source_dir/observability/prometheus/monitors/"
+    kubectl -n "$promNS" apply -f "$source_dir/observability/prometheus/monitors/"
+
     printf "%bDeploying Prometheus Rules.%b\n" "$GREEN" "$NO_COLOR"
-    kubectl apply --recursive -f "$source_dir/observability/prometheus/rules/"
+    kubectl -n "$promNS" apply --recursive -f "$source_dir/observability/prometheus/rules/"
+
     printf "%bDeploying Grafana Dashboards.%b\n" "$GREEN" "$NO_COLOR"
-    kubectl apply -f "$source_dir/observability/grafana/dashboards/"
-    printf "To open Grafana run\n%% kubectl port-forward svc/prom-grafana 3000:80\nand open your browser at http://localholst:3000\nusername: admin, password: admin\n%bKube Prometheus Stack deployed.%b\n" "$GREEN" "$NO_COLOR"
+    kubectl -n "$promNS" apply -f "$source_dir/observability/grafana/dashboards/"
+
+    printf "To open Grafana run\n%% kubectl port-forward svc/prom-grafana 3000:80\nand open your browser at http://localholst:3000\nusername: admin, password: admin\n\n%bKube Prometheus Stack deployed.%b\n" "$GREEN" "$NO_COLOR"
 }
 
 deploy_influx_db() {
     printf "%bDeploying InfluxDB for storing metrics.%b\n" "$GREEN" "$NO_COLOR"
     helm repo add influxdata https://helm.influxdata.com/
-    helm upgrade --install benchmark-data -f test-infrastructure/influx-values.yml influxdata/influxdb
+    helm upgrade --install benchmark-data \
+        --namespace influx --create-namespace \
+        -f test-infrastructure/influx-values.yml \
+        influxdata/influxdb
     printf "%bInfluxDB deployed.%b\n" "$GREEN" "$NO_COLOR"
 }
 
