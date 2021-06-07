@@ -115,14 +115,13 @@ deploy_kube_prometheus_stack() {
     printf "%bDeploying Grafana Dashboards.%b\n" "$GREEN" "$NO_COLOR"
     kubectl -n "$promNS" apply -f "$source_dir/observability/grafana/dashboards/"
 
-    printf "To open Grafana run\n%% kubectl port-forward svc/prom-grafana 3000:80\nand open your browser at http://localholst:3000\nusername: admin, password: admin\n\n%bKube Prometheus Stack deployed.%b\n" "$GREEN" "$NO_COLOR"
+    printf "To open Grafana run\n%% kubectl -n %s port-forward svc/prom-grafana 3000:80\nand open your browser at http://localholst:3000\nusername: admin, password: admin\n\n%bKube Prometheus Stack deployed.%b\n" "$promNS" "$GREEN" "$NO_COLOR"
 }
 
 deploy_influx_db() {
     printf "%bDeploying InfluxDB for storing metrics.%b\n" "$GREEN" "$NO_COLOR"
     helm repo add influxdata https://helm.influxdata.com/
     helm upgrade --install benchmark-data \
-        --namespace influx --create-namespace \
         -f test-infrastructure/influx-values.yml \
         influxdata/influxdb
     printf "%bInfluxDB deployed.%b\n" "$GREEN" "$NO_COLOR"
