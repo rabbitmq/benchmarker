@@ -44,6 +44,7 @@ resource "pacific_guestcluster" "gc" {
    input_kubeconfig = pacific_nimbus_namespace.ns.kubeconfig
    version = "v1.18"
    network_servicedomain = "cluster.local"
+   topology_controlplane_count = 3
    topology_controlplane_class = "best-effort-medium"
    topology_workers_class = var.workers_class
    topology_workers_count = var.node_count
