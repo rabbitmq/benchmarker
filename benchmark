@@ -12,9 +12,9 @@ usage() {
         cat <<-END
 USAGE:
   Provision infrastructure and run benchmark on Kubernetes
-    % benchmark --provider (gke|aks|eks)
+    % benchmark --provider (gke|aks|eks|calatrava)
   Destroy infrastructure
-    % benchmark destroy --provider (gke|aks|eks)
+    % benchmark destroy --provider (gke|aks|eks|calatrava)
 END
     )
     echo "$usage"
@@ -34,6 +34,10 @@ terraform_env() {
             terraform_eks
             ;;
 
+        "calatrava")
+            terraform_calatrava
+            ;;
+
         *)
             printf "%sOption '%s' not recognized%s\n" "$RED" "$provider" "$NO_COLOR"
             exit 1
@@ -42,37 +46,53 @@ terraform_env() {
 }
 
 terraform_gke() {
-    # echo "Deployment requires gcloud credentials"
-    # gcloud auth application-default login
-    # echo "gcloud authenticated"
-
     pushd terraform/gke
-        printf "%sTerraforming a GKE cluster.%s\n" "$GREEN" "$NO_COLOR"
+        printf "%bTerraforming a GKE cluster.%b\n" "$GREEN" "$NO_COLOR"
         terraform init
         terraform apply -var-file="../../gke-cluster-config.tfvars"
         export KUBECONFIG="$PWD/kubeconfig-rabbitmq-benchmark"
-        printf "%sCluster created, credentials are located in 'terraform/gke/kubeconfig-rabbitmq-benchmark'.%s\n" "$GREEN" "$NO_COLOR"
+        printf "%bCluster created, credentials are located in 'terraform/gke/kubeconfig-rabbitmq-benchmark'.%b\n" "$GREEN" "$NO_COLOR"
     popd
 }
 
 terraform_aks() {
     pushd terraform/aks
-        printf "%sTerraforming an AKS cluster.%s\n" "$GREEN" "$NO_COLOR"
+        printf "%bTerraforming an AKS cluster.%b\n" "$GREEN" "$NO_COLOR"
         terraform init
         terraform apply -var-file="../../aks-cluster-config.tfvars"
         terraform output kube_config > kubeconfig-rabbitmq-benchmark
         export KUBECONFIG="$PWD/kubeconfig-rabbitmq-benchmark"
-        printf "%sCluster created, credentials are located in 'terraform/aks/kubeconfig-rabbitmq-benchmark'.%s\n" "$GREEN" "$NO_COLOR"
+        printf "%bCluster created, credentials are located in 'terraform/aks/kubeconfig-rabbitmq-benchmark'.%b\n" "$GREEN" "$NO_COLOR"
     popd
 }
 
 terraform_eks() {
     pushd terraform/eks
-        printf "%sTerraforming an EKS cluster.%s\n" "$GREEN" "$NO_COLOR"
+        printf "%bTerraforming an EKS cluster.%b\n" "$GREEN" "$NO_COLOR"
         terraform init
         terraform apply -var-file="../../eks-cluster-config.tfvars"
         export KUBECONFIG="$PWD/kubeconfig_benchmark"
-        printf "%sCluster created, credentials are located in 'terraform/eks/kubeconfig-rabbitmq-benchmark'.%s\n" "$GREEN" "$NO_COLOR"
+        printf "%bCluster created, credentials are located in 'terraform/eks/kubeconfig_benchmark'.%b\n" "$GREEN" "$NO_COLOR"
+    popd
+}
+
+compile_calatrava_provider() {
+    calatrava_source="$(mktemp -d)"
+    trap 'rm -rf "$calatrava_source"' EXIT
+    git clone git@gitlab.eng.vmware.com:calatrava/calatrava.git "$calatrava_source"
+    pushd "$calatrava_source/terraform"
+        make install
+    popd
+}
+
+terraform_calatrava() {
+    printf "%bTerraforming a Calatrava cluster.%b\n" "$GREEN" "$NO_COLOR"
+    compile_calatrava_provider
+    pushd terraform/calatrava
+        terraform init
+        terraform apply -var-file="../../calatrava-cluster-config.tfvars"
+        export KUBECONFIG="$PWD/kubeconfig-rabbitmq-benchmark"
+        printf "%bCluster created, credentials are located in 'terraform/eks/kubeconfig-rabbitmq-benchmark'.%b\n" "$GREEN" "$NO_COLOR"
     popd
 }
 
@@ -164,6 +184,11 @@ destroy() {
             return
             ;;
 
+        "calatrava")
+            destroy_calatrava
+            return
+            ;;
+
         *)
             printf "%bOption '$provider' not recognized%b\n" "$RED" "$NO_COLOR"
             exit 1
@@ -192,6 +217,14 @@ destroy_eks() {
         printf "%bDestroying EKS cluster.%b\n" "$ORANGE" "$NO_COLOR"
         terraform destroy
         printf "%bEKS cluster destroyed.%b\n" "$GREEN" "$NO_COLOR"
+    popd
+}
+
+destroy_calatrava() {
+    pushd terraform/calatrava
+        printf "%bDestroying Calatrava cluster.%b\n" "$ORANGE" "$NO_COLOR"
+        terraform destroy
+        printf "%bCalatrava cluster destroyed.%b\n" "$GREEN" "$NO_COLOR"
     popd
 }
 
