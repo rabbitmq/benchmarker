@@ -13,6 +13,8 @@ usage() {
 USAGE:
   Provision infrastructure and run benchmark on Kubernetes
     % benchmark --provider (gke|aks|eks|calatrava)
+  Install and run Benchmarking tools on existing targeted Kubernetes
+    % benchmark --skip-terraform
   Destroy infrastructure
     % benchmark destroy --provider (gke|aks|eks|calatrava)
 END
@@ -233,9 +235,14 @@ case "$#" in
         if [[ "$1" == "--help" ]]; then
             usage
             exit 0
+        elif [[ "$1" == "--skip-terraform" ]]; then
+            deploy
+            benchmark
+            exit 0
+        else
+            usage
+            exit 1
         fi
-        usage
-        exit 1
         ;;
 
     2)
