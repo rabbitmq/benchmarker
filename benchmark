@@ -96,6 +96,13 @@ terraform_calatrava() {
         export KUBECONFIG="$PWD/kubeconfig-rabbitmq-benchmark"
         printf "%bCluster created, credentials are located in 'terraform/eks/kubeconfig-rabbitmq-benchmark'.%b\n" "$GREEN" "$NO_COLOR"
     popd
+    configureClusterRoleBinding
+}
+
+configureClusterRoleBinding() {
+    kubectl create clusterrolebinding default-binding \
+        --clusterrole=psp:vmware-system-unprivileged \
+        --group=system:authenticated
 }
 
 deploy() {
