@@ -2,7 +2,7 @@
 A tool for benchmarking RabbitMQ on Kubernetes with various hardware and messaging configurations.
 
 ## Supported Kubernetes platforms
-The tooling currently supports GKE, AKS, and EKS via terraform modules.
+The tooling currently supports GKE, AKS, EKS, and Calatrava (Project Pacific) via terraform modules.
 
 ## Getting started
 
@@ -43,3 +43,9 @@ To tear down the infrastructure provisioned by the operator, run
 benchmark destroy --provider (gke|aks|eks|calatrava)
 ```
 **Note**: this operation is destructive and will result in the loss of the benchmark data.
+
+## Results
+
+| *Messages/second* | *Message Size (KB)* | *Replication Factor* | *Cores (per Node)* | *Memory (GB)* |
+| ----------------: | ------------------: | -------------------- | ------------------ | ------------: |
+| NNNNNN            | NN                  | 3                    | N                  | NN            |
