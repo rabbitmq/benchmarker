@@ -46,9 +46,9 @@ benchmark destroy --provider (gke|aks|eks|calatrava)
 
 ## Results
 
-| *Messages/second* | *Message Size (KB)* | *Replication Factor* | *Cores (per Node)* | *Memory (GB)* |
-| ----------------: | ------------------: | -------------------: | -----------------: | ------------: |
-| NNNNNN            | NN                  | 3                    | N                  | NN            |
+| *Messages/second* | *Message Size (KB)* | *Replication Factor* | *Queue type*  | *Cores (per Node)* | *Memory (GB)* |
+| ----------------: | ------------------: | -------------------: | ------------- |-----------------: | ------------: |
+| NNNNNN            | NN                  | 3                    | quorum/stream | N                  | NN            |
 
 ### Adding new results
  To add new benchmarking results, please open a PR with your addition.
