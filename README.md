@@ -46,9 +46,20 @@ benchmark destroy --provider (gke|aks|eks|calatrava)
 
 ## Results
 
-| *Messages/second* | *Message Size (KB)* | *Replication Factor* | *Queue type*  | *Cores (per Node)* | *Memory (GB)* |
-| ----------------: | ------------------: | -------------------: | ------------- |-----------------: | ------------: |
-| NNNNNN            | NN                  | 3                    | quorum/stream | N                  | NN            |
+There is a significant amount of performance information captured in a series of blog posts by Jack Vanlightly from 2020.
+- [Cluster Sizing](https://blog.rabbitmq.com/posts/2020/06/cluster-sizing-and-other-considerations/)
+- [Quorum Queues](https://blog.rabbitmq.com/posts/2020/06/cluster-sizing-case-study-quorum-queues-part-1/)
+- [Mirrored Queues](https://blog.rabbitmq.com/posts/2020/06/cluster-sizing-case-study-mirrored-queues-part-1/)
+
+| *Messages/second* | *Message Size (KB)* | *Queue Type* | *Replication Factor* | *Cluster Size* | *Cores (per Node)* | *Memory (GB per Node)* | *Disk Type* |
+| ----------------: | ------------------: | -----------: | -------------------- | -------------: | -----------------: | ---------------------: | ----------: |
+| 36,000            | 1                   | quorum       | 3                    | 3              | 16                 | 32                     | SSD         |
+| 37,000            | 1                   | quorum       | 3                    | 3              | 36                 | 72                     | SSD         |
+| 42,000            | 1                   | quorum       | 3                    | 5              | 8                  | 16                     | SSD         |
+| 54,000            | 1                   | quorum       | 3                    | 5              | 16                 | 32                     | SSD         |
+| 54,000            | 1                   | quorum       | 3                    | 7              | 8                  | 16                     | SSD         |
+| 67,000            | 1                   | quorum       | 3                    | 7              | 16                 | 16                     | SSD         |
+| 66,000            | 1                   | quorum       | 3                    | 9              | 8                  | 16                     | SSD         |
 
 ### Adding new results
  To add new benchmarking results, please open a PR with your addition.
