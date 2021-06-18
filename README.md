@@ -52,7 +52,7 @@ There is a significant amount of performance information captured in a series of
 - [Mirrored Queues](https://blog.rabbitmq.com/posts/2020/06/cluster-sizing-case-study-mirrored-queues-part-1/)
 
 | *Messages/second* | *Message Size (KB)* | *Queue Type* | *Replication Factor* | *Cluster Size* | *Cores (per Node)* | *Memory (GB per Node)* | *Disk Type* |
-| ----------------: | ------------------: | -----------: | -------------------- | -------------: | -----------------: | ---------------------: | ----------: |
+| ----------------: | ------------------: | -----------: | -------------------: | -------------: | -----------------: | ---------------------: | ----------: |
 | 36,000            | 1                   | quorum       | 3                    | 3              | 16                 | 32                     | SSD         |
 | 37,000            | 1                   | quorum       | 3                    | 3              | 36                 | 72                     | SSD         |
 | 42,000            | 1                   | quorum       | 3                    | 5              | 8                  | 16                     | SSD         |
