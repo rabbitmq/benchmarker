@@ -4,6 +4,9 @@
 *.tfstate.lock.info
 *.terraform.lock.hcl
 
+# Kubeconfigs
+terraform/*/kubeconfig*benchmark
+
 # logs
 *.log
 
